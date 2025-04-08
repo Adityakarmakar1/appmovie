@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Movie Night Planner - Login</title>
+  <style>
+    :root {
+      --bg-light: #fafafa;
+      --bg-dark: #11131e;
+      --text-light: #1a1a1a;
+      --text-dark: #f0f0f0;
+      --accent: #ff4c60;
+      --accent-dark: #ff2e63;
+    }
+
+    body {
+      margin: 50px;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      transition: background 0.5s, color 0.5s;
+      overflow: hidden;
+    }
+
+    body.light {
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
+
+    body.dark {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      z-index: 10;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      animation: slideDown 1s ease forwards;
+    }
+
+    .navbar h1 {
+      font-size: 1.5rem;
+      color: #fff;
+      animation: fadeIn 1s ease 0.5s forwards;
+    }
+
+    .navbar nav a {
+      margin-left: 20px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      position: relative;
+      transition: color 0.3s;
+    }
+
+    .navbar nav a::after {
+      content: '';
+      position: absolute;
+      width: 0%;
+      height: 2px;
+      left: 0;
+      bottom: -4px;
+      background: #fff;
+      transition: 0.3s;
+    }
+
+    .navbar nav a:hover {
+      color: #ff4c60;
+    }
+
+    .navbar nav a:hover::after {
+      width: 100%;
+    }
+
+    @keyframes slideDown {
+      0% {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .movie-icons {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .movie-icon {
+      position: absolute;
+      width: 40px;
+      opacity: 0.7;
+      animation: float 12s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-10vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-top: 0px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 400px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+      animation: flipIn 1s ease forwards;
+    }
+
+    @keyframes flipIn {
+      0% {
+        transform: rotateY(-90deg) scale(0.8);
+        opacity: 0;
+      }
+      100% {
+        transform: rotateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .login-box h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 1.8rem;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      color: inherit;
+      font-size: 1em;
+      transition: all 0.3s ease;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: white;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.3s ease, background 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-btn:hover {
+      background: var(--accent-dark);
+      transform: scale(1.05);
+    }
+
+    .login-btn:active::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 200%;
+      height: 200%;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      animation: clickBurst 0.5s forwards;
+      z-index: 0;
+    }
+
+    @keyframes bounceSlide {
+      0% {
+        transform: translateY(-50px) scale(0.8);
+        opacity: 0;
+      }
+      60% {
+        transform: translateY(10px) scale(1.05);
+      }
+      80% {
+        transform: translateY(-5px);
+      }
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .animated-text {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      margin: 15px 0 10px 0;
+      animation: bounceSlide 1s ease forwards;
+    }
+
+    .animated-text h2 {
+      font-size: 3rem;
+      color: var(--text-dark);
+      text-shadow: 
+        0 1px 0 #ccc,
+        0 2px 0 #c9c9c9,
+        0 3px 0 #bbb,
+        0 4px 0 #b9b9b9,
+        0 5px 0 #aaa,
+        0 6px 1px rgba(0,0,0,.1),
+        0 0 5px rgba(0,0,0,.1),
+        0 1px 3px rgba(0,0,0,.3),
+        0 3px 5px rgba(0,0,0,.2),
+        0 5px 10px rgba(0,0,0,.25);
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    body.light .animated-text h2 {
+      color: var(--text-light);
+      text-shadow: 
+        0 1px 0 #555,
+        0 2px 0 #555,
+        0 3px 0 #555,
+        0 4px 0 #555,
+        0 5px 0 #555,
+        0 6px 1px rgba(0,0,0,.1),
+        0 0 5px rgba(0,0,0,.1),
+        0 1px 3px rgba(0,0,0,.3),
+        0 3px 5px rgba(0,0,0,.2),
+        0 5px 10px rgba(0,0,0,.25);
+    }
+
+    @keyframes clickBurst {
+      to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+      }
+    }
+
+    .toggle-mode {
+      position: absolute;
+      top: 70px;
+      right: 20px;
+      background: transparent;
+      border: 2px solid currentColor;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.3s ease;
+      z-index: 2;
+    }
+
+    .toggle-mode:hover {
+      transform: rotate(180deg);
+    }
+
+    .error {
+      color: red;
+      font-size: 0.9em;
+      margin-top: -10px;
+      margin-bottom: 10px;
+    }
+
+  </style>
+</head>
+<body class="dark">
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <h1>🎥 Movie Planner</h1>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">About</a>
+      <a href="#">Features</a>
+    </nav>
+  </div>
+
+  <!-- Animated Text -->
+  <div class="animated-text">
+    <h2>🎬 Your personal movie night planner</h2>
+  </div>
+
+  <!-- Movie Icons -->
+  <div class="movie-icons">
+    <img src="https://cdn-icons-png.flaticon.com/512/942/942748.png" class="movie-icon" style="left:5%; animation-delay:0s;">
+    <img src="https://cdn-icons-png.flaticon.com/512/3208/3208707.png" class="movie-icon" style="left:25%; animation-delay:2s;">
+    <img src="https://cdn-icons-png.flaticon.com/512/3209/3209038.png" class="movie-icon" style="left:50%; animation-delay:4s;">
+    <img src="https://cdn-icons-png.flaticon.com/512/942/942748.png" class="movie-icon" style="left:75%; animation-delay:6s;">
+    <img src="https://cdn-icons-png.flaticon.com/512/3209/3209038.png" class="movie-icon" style="left:90%; animation-delay:8s;">
+  </div>
+
+  <button class="toggle-mode" id="modeToggle" title="Toggle Light/Dark">🌙</button>
+
+  <div class="container">
+    <div class="login-box">
+      <h2>🍿 Movie Night Planner</h2>
+      <form id="loginForm" novalidate>
+        <div class="input-group">
+          <label for="email">Email:</label>
+          <input type="email" id="email" required />
+          <div class="error" id="emailError"></div>
+        </div>
+        <div class="input-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" required minlength="6"/>
+          <div class="error" id="passError"></div>
+        </div>
+        <button type="submit" class="login-btn">🎬 Login</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+    let width, height;
+    let particles = [];
+    let mouse = { x: null, y: null };
+    let trails = [];
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+
+    class Particle {
+      constructor(x = Math.random() * width, y = Math.random() * height) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 2 + 1;
+        this.speedX = Math.random() * 1 - 0.5;
+        this.speedY = Math.random() * 1 - 0.5;
+        this.life = 100;
+      }
+
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.life--;
+
+        if (mouse.x && mouse.y) {
+          let dx = this.x - mouse.x;
+          let dy = this.y - mouse.y;
+          let dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 100) {
+            this.x += dx / dist;
+            this.y += dy / dist;
+          }
+        }
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${this.life / 100})`;
+        ctx.fill();
+      }
+    }
+
+    function initParticles() {
+      particles = [];
+      for (let i = 0; i < 120; i++) {
+        particles.push(new Particle());
+      }
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach((p, i) => {
+        p.update();
+        p.draw();
+        for (let j = i + 1; j < particles.length; j++) {
+          let p2 = particles[j];
+          let dx = p.x - p2.x;
+          let dy = p.y - p2.y;
+          let dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 100) {
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(255,255,255,0.05)";
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+        if (p.life <= 0) particles[i] = new Particle();
+      });
+
+      requestAnimationFrame(animateParticles);
+    }
+
+    window.addEventListener("resize", () => {
+      resizeCanvas();
+      initParticles();
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+
+    window.addEventListener("click", (e) => {
+      for (let i = 0; i < 30; i++) {
+        particles.push(new Particle(e.clientX, e.clientY));
+      }
+    });
+
+    // Light/Dark Mode Toggle
+    const toggleBtn = document.getElementById('modeToggle');
+    toggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      document.body.classList.toggle('light');
+      toggleBtn.textContent = document.body.classList.contains('dark') ? '🌙' : '☀️';
+    });
+
+    // Form validation
+    const form = document.getElementById('loginForm');
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const emailError = document.getElementById('emailError');
+    const passError = document.getElementById('passError');
+
+    form.addEventListener('submit', function (e) {
+      let valid = true;
+      emailError.textContent = "";
+      passError.textContent = "";
+
+      if (!email.value || !email.value.includes("@")) {
+        emailError.textContent = "Please enter a valid email.";
+        valid = false;
+      }
+      if (password.value.length < 6) {
+        passError.textContent = "Password must be at least 6 characters.";
+        valid = false;
+      }
+
+      if (!valid) {
+        e.preventDefault();
+      } else {
+        alert("Login successful! 🍿");
+      }
+    });
+
+    resizeCanvas();
+    initParticles();
+    animateParticles();
+  </script>
+</body>
+</html>
