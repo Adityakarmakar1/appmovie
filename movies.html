@@ -1,322 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI Movie Night Planner</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Movie Night Planner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root {
-      --bg: #121212;
-      --accent: #e50914;
-      --text: #f5f5f5;
-      --card: #1e1e1e;
-    }
-
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    header, footer {
-      text-align: center;
-      padding: 1em;
-      background-color: var(--card);
-    }
-
-    header h1 {
-      margin: 0;
-      color: var(--accent);
-    }
-
-    main {
-      max-width: 900px;
-      margin: auto;
-      padding: 2em 1em;
-    }
-
-    form {
-      display: grid;
-      gap: 1em;
-      grid-template-columns: 1fr 1fr;
-    }
-
-    form input, form select, form button {
-      padding: 0.8em;
-      border-radius: 6px;
-      border: none;
-      font-size: 1em;
-    }
-
-    form button {
-      background-color: var(--accent);
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    form button:hover {
-      background-color: #bf0810;
-    }
-
-    .full {
-      grid-column: span 2;
-    }
-
-    .movies {
-      margin-top: 2em;
-      display: grid;
-      gap: 1.5em;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    }
-
-    .movie {
-      background: var(--card);
-      padding: 1em;
-      border-radius: 8px;
-      text-align: center;
-      transition: transform 0.2s ease;
-      cursor: pointer;
-    }
-
-    .movie:hover {
-      transform: scale(1.03);
-    }
-
-    .movie img {
-      width: 100%;
-      height: 270px;
-      object-fit: cover;
-      border-radius: 6px;
-    }
-
-    .spinner {
-      display: none;
-      text-align: center;
-      margin-top: 2em;
-    }
-
-    .spinner div {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid var(--accent);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: auto;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    /* Modal styles */
-    .modal {
-      display: none;
+    #chatbot-toggle {
       position: fixed;
-      z-index: 10;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
+      bottom: 20px;
+      right: 20px;
+      background: #4F46E5;
+      color: white;
+      font-size: 24px;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2em;
-    }
-
-    .modal-content {
-      background: var(--card);
-      padding: 2em;
-      border-radius: 8px;
-      max-width: 500px;
-      color: var(--text);
-      position: relative;
-    }
-
-    .close-btn {
-      position: absolute;
-      right: 1em;
-      top: 1em;
       cursor: pointer;
-      font-size: 1.2em;
-      color: var(--accent);
+      z-index: 50;
     }
 
-    .watchlist {
-      margin-top: 2em;
+    #chatbot {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 300px;
+      max-height: 400px;
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 40;
+    }
+
+    #chatbot-messages {
+      padding: 1rem;
+      overflow-y: auto;
+      flex-grow: 1;
+      max-height: 300px;
+    }
+
+    #chatbot-input {
+      display: flex;
+      border-top: 1px solid #ddd;
+    }
+
+    #chatbot-input input {
+      flex: 1;
+      border: none;
+      padding: 0.75rem;
+      outline: none;
+    }
+
+    #chatbot-input button {
+      padding: 0 1rem;
+      background: #4F46E5;
+      color: white;
+      border: none;
     }
   </style>
 </head>
-<body>
-  <header>
-    <h1>🎬 AI Movie Night Planner</h1>
-  </header>
+<body class="bg-gray-100 font-sans">
 
-  <main>
-    <form id="movieForm">
-      <input type="text" id="genre" placeholder="Genre (e.g. Action)">
-      <input type="text" id="mood" placeholder="Mood (e.g. Funny, Dark)">
-      <input type="number" id="count" min="1" max="10" placeholder="Number of Movies">
-      <input type="number" id="year" placeholder="Release Year">
-      <input type="number" id="minRating" min="0" max="10" step="0.1" placeholder="Min IMDb Rating">
-      <button type="submit">🎥 Get Movies</button>
-      <button type="button" id="randomBtn">🎲 Random Movie</button>
-      <button type="button" id="resetBtn">🔁 Reset</button>
-    </form>
+  <!-- Hero Section -->
+  <section class="text-center py-20 bg-indigo-600 text-white">
+    <h1 class="text-4xl font-bold mb-4">🎬 Movie Night Planner</h1>
+    <p class="text-lg">Plan the perfect movie night with smart suggestions!</p>
+  </section>
 
-    <div class="spinner" id="loading"><div></div></div>
+  <!-- Featured Movies -->
+  <section class="p-6 max-w-6xl mx-auto">
+    <h2 class="text-2xl font-semibold mb-4">Top Picks</h2>
+    <div id="movie-list" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+  </section>
 
-    <div class="movies" id="movieList"></div>
+  <!-- Chatbot Toggle Icon -->
+  <div id="chatbot-toggle" onclick="toggleChatbot()">💬</div>
 
-    <div class="watchlist" id="watchlist"></div>
-  </main>
-
-  <footer>
-    <p>&copy; 2025 Movie Night Planner</p>
-  </footer>
-
-  <!-- Modal -->
-  <div class="modal" id="modal">
-    <div class="modal-content">
-      <span class="close-btn" id="closeModal">&times;</span>
-      <div id="modalContent"></div>
+  <!-- Chatbot Window -->
+  <div id="chatbot">
+    <div class="flex justify-between items-center p-2 border-b bg-gray-100">
+      <span class="font-semibold text-sm">🎥 MovieBot</span>
+      <button onclick="clearChat()" class="text-xs text-red-500 hover:underline">Clear Chat</button>
+    </div>
+    <div id="chatbot-messages"></div>
+    <div id="chatbot-input">
+      <input id="user-input" placeholder="Tell me your mood or genre..." />
+      <button onclick="sendMessage()">Send</button>
     </div>
   </div>
 
   <script>
-    const API_KEY = "a845090b"; // 🔑 Replace with your OMDb API Key
-    const BASE_URL = "https://www.omdbapi.com/";
+    const movies = [
+      { title: "Inception", genre: "Sci-Fi", rating: "8.8", description: "Mind-bending thriller.", poster: "https://via.placeholder.com/150" },
+      { title: "The Notebook", genre: "Romance", rating: "7.9", description: "A heartfelt love story.", poster: "https://via.placeholder.com/150" },
+      { title: "The Dark Knight", genre: "Action", rating: "9.0", description: "Epic Batman adventure.", poster: "https://via.placeholder.com/150" },
+      { title: "Inside Out", genre: "Animation, Feel-good", rating: "8.2", description: "Emotion-packed Pixar gem.", poster: "https://via.placeholder.com/150" },
+      { title: "The Pursuit of Happyness", genre: "Drama", rating: "8.0", description: "Inspiring journey of hope.", poster: "https://via.placeholder.com/150" },
+      { title: "Knives Out", genre: "Mystery", rating: "7.9", description: "Modern whodunit mystery.", poster: "https://via.placeholder.com/150" },
+    ];
 
-    const form = document.getElementById("movieForm");
-    const loading = document.getElementById("loading");
-    const movieList = document.getElementById("movieList");
-    const randomBtn = document.getElementById("randomBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const modal = document.getElementById("modal");
-    const modalContent = document.getElementById("modalContent");
-    const closeModal = document.getElementById("closeModal");
+    const moodGenreMap = {
+      happy: ["Comedy", "Romance"],
+      sad: ["Drama", "Feel-good"],
+      adventurous: ["Action", "Thriller"],
+      thoughtful: ["Mystery", "Sci-Fi"],
+      bored: ["Random"]
+    };
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const genre = document.getElementById("genre").value.trim();
-      const mood = document.getElementById("mood").value.trim();
-      const count = parseInt(document.getElementById("count").value) || 5;
-      const year = document.getElementById("year").value.trim();
-      const minRating = parseFloat(document.getElementById("minRating").value) || 0;
-
-      if (!genre && !mood) return alert("Please enter a genre or mood.");
-
-      loading.style.display = "block";
+    function loadMovies() {
+      const movieList = document.getElementById("movie-list");
       movieList.innerHTML = "";
-
-      try {
-        const query = genre || mood;
-        const res = await fetch(`${BASE_URL}?apikey=${API_KEY}&s=${query}&type=movie`);
-        const data = await res.json();
-
-        if (data.Response === "True") {
-          const validMovies = [];
-          for (let movie of data.Search) {
-            if (year && movie.Year !== year) continue;
-
-            const detailsRes = await fetch(`${BASE_URL}?apikey=${API_KEY}&i=${movie.imdbID}`);
-            const details = await detailsRes.json();
-
-            if (parseFloat(details.imdbRating) >= minRating) {
-              validMovies.push(details);
-            }
-
-            if (validMovies.length >= count) break;
-          }
-
-          displayMovies(validMovies);
-        } else {
-          alert("No movies found.");
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Error fetching movies.");
-      } finally {
-        loading.style.display = "none";
-      }
-    });
-
-    randomBtn.addEventListener("click", getRandomMovie);
-    resetBtn.addEventListener("click", () => {
-      form.reset();
-      movieList.innerHTML = "";
-    });
-
-    function displayMovies(movies) {
-      movieList.innerHTML = "";
-      movies.forEach(movie => {
-        const div = document.createElement("div");
-        div.className = "movie";
-        div.innerHTML = `
-          <img src="${movie.Poster !== "N/A" ? movie.Poster : 'https://via.placeholder.com/180x270'}" alt="${movie.Title}">
-          <h3>${movie.Title}</h3>
-          <button onclick='showDetails("${movie.imdbID}")'>More Info</button>
+      movies.forEach(m => {
+        const movieCard = document.createElement("div");
+        movieCard.className = "bg-white p-4 rounded-xl shadow";
+        movieCard.innerHTML = `
+          <img src="${m.poster}" class="w-full h-40 object-cover rounded-md mb-2">
+          <h3 class="font-semibold text-lg">${m.title}</h3>
+          <p class="text-sm text-gray-500">${m.genre}</p>
+          <p class="text-sm">${m.description}</p>
+          <p class="text-sm text-yellow-600 font-semibold">⭐ ${m.rating}</p>
         `;
-        movieList.appendChild(div);
+        movieList.appendChild(movieCard);
       });
     }
 
-    async function getRandomMovie() {
-      loading.style.display = 'block';
-      movieList.innerHTML = '';
+    function sendMessage() {
+      const input = document.getElementById("user-input");
+      const messages = document.getElementById("chatbot-messages");
+      const userMsg = input.value.trim();
+      if (!userMsg) return;
 
-      const keywords = ['Action', 'Comedy', 'Drama', 'Romance', 'Horror', 'Thriller', 'Fantasy', 'Sci-Fi', 'Adventure', 'Mystery'];
-      const keyword = keywords[Math.floor(Math.random() * keywords.length)];
-      const page = Math.floor(Math.random() * 5) + 1;
+      const userDiv = document.createElement("div");
+      userDiv.className = "mb-2 text-right";
+      userDiv.textContent = "👤: " + userMsg;
+      messages.appendChild(userDiv);
 
-      try {
-        const res = await fetch(`${BASE_URL}?apikey=${API_KEY}&s=${keyword}&type=movie&page=${page}`);
-        const data = await res.json();
+      const botDiv = document.createElement("div");
+      botDiv.className = "mb-2";
 
-        if (data.Response === 'True') {
-          const randomMovie = data.Search[Math.floor(Math.random() * data.Search.length)];
-          const detailsRes = await fetch(`${BASE_URL}?apikey=${API_KEY}&i=${randomMovie.imdbID}`);
-          const details = await detailsRes.json();
-          displayMovies([details]);
+      const mood = Object.keys(moodGenreMap).find(m =>
+        userMsg.toLowerCase().includes(m)
+      );
+
+      let matchingMovies;
+      if (mood) {
+        const genres = moodGenreMap[mood];
+        if (genres.includes("Random")) {
+          matchingMovies = [movies[Math.floor(Math.random() * movies.length)]];
         } else {
-          alert('Could not find a random movie.');
+          matchingMovies = movies.filter(movie =>
+            genres.some(g => movie.genre.toLowerCase().includes(g.toLowerCase()))
+          );
         }
-      } catch (err) {
-        console.error(err);
-        alert('Error fetching random movie.');
-      } finally {
-        loading.style.display = 'none';
-      }
-    }
-
-    async function showDetails(imdbID) {
-      const res = await fetch(`${BASE_URL}?apikey=${API_KEY}&i=${imdbID}`);
-      const movie = await res.json();
-
-      modalContent.innerHTML = `
-        <h2>${movie.Title} (${movie.Year})</h2>
-        <p><strong>Genre:</strong> ${movie.Genre}</p>
-        <p><strong>Plot:</strong> ${movie.Plot}</p>
-        <p><strong>IMDb Rating:</strong> ${movie.imdbRating}</p>
-        <button onclick="addToWatchlist('${movie.Title}')">➕ Add to Watchlist</button>
-      `;
-      modal.style.display = "flex";
-    }
-
-    closeModal.onclick = () => modal.style.display = "none";
-    window.onclick = e => { if (e.target === modal) modal.style.display = "none"; }
-
-    function addToWatchlist(title) {
-      const list = JSON.parse(localStorage.getItem("watchlist") || "[]");
-      if (!list.includes(title)) {
-        list.push(title);
-        localStorage.setItem("watchlist", JSON.stringify(list));
-        alert("Added to watchlist!");
       } else {
-        alert("Already in watchlist!");
+        matchingMovies = movies.filter(movie =>
+          movie.genre.toLowerCase().includes(userMsg.toLowerCase())
+        );
       }
+
+      if (matchingMovies.length > 0) {
+        botDiv.innerHTML = `<strong>🤖 Suggestions:</strong><ul class="list-disc pl-4">
+          ${matchingMovies.map(m => `<li>${m.title} (${m.genre})</li>`).join("")}
+        </ul>`;
+      } else {
+        botDiv.textContent = "🤖 Sorry, I couldn't find any movies for that input.";
+      }
+
+      messages.appendChild(botDiv);
+      input.value = "";
+      messages.scrollTop = messages.scrollHeight;
     }
+
+    function toggleChatbot() {
+      const chatbot = document.getElementById("chatbot");
+      chatbot.style.display = chatbot.style.display === "flex" ? "none" : "flex";
+    }
+
+    function clearChat() {
+      const messages = document.getElementById("chatbot-messages");
+      messages.innerHTML = "";
+    }
+
+    window.onload = loadMovies;
   </script>
 </body>
 </html>
