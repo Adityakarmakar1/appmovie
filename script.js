@@ -1,97 +1,106 @@
-function redirectToMovies() {
-    const email = document.getElementById('email').value;
-
-    if (!email.includes('@') || !email.includes('.')) {
-        alert('Please enter a valid email.');
-    } else {
-        localStorage.setItem('userEmail', email);  
-        window.location.href = "movies.html";  
-    }
-}
-// Create a function to render a movie element
-function renderMovie(movie, watchlist) {
-    const isInWatchlist = watchlist.some(m => m.title === movie.title);
-  
-    // Create a movie element
-    const movieEl = document.createElement('div');
-    movieEl.className = 'movie';
-  
-    // Create movie actions element
-    const movieActionsEl = document.createElement('div');
-    movieActionsEl.className = 'movie-actions';
-  
-    // Create watchlist button
-    const watchlistBtn = document.createElement('button');
-    watchlistBtn.className = 'action-btn';
-    watchlistBtn.innerHTML = `
-      <i class="fas ${isInWatchlist ? 'fa-bookmark' : 'fa-plus'}"></i>
-    `;
-    watchlistBtn.addEventListener('click', (event) => toggleWatchlistItem(event, movie));
-  
-    // Create play trailer button
-    const playTrailerBtn = document.createElement('button');
-    playTrailerBtn.className = 'action-btn';
-    playTrailerBtn.innerHTML = `
-      <i class="fas fa-play"></i>
-    `;
-    playTrailerBtn.addEventListener('click', () => playTrailer(movie.trailer));
-  
-    // Add buttons to movie actions element
-    movieActionsEl.appendChild(watchlistBtn);
-    movieActionsEl.appendChild(playTrailerBtn);
-  
-    // Create movie image element
-    const movieImageEl = document.createElement('img');
-    movieImageEl.src = movie.image;
-    movieImageEl.alt = movie.title;
-    movieImageEl.onerror = () => movieImageEl.src = 'placeholder.jpg';
-  
-    // Create movie content element
-    const movieContentEl = document.createElement('div');
-    movieContentEl.className = 'movie-content';
-  
-    // Create movie title element
-    const movieTitleEl = document.createElement('h3');
-    movieTitleEl.textContent = movie.title;
-  
-    // Create movie info element
-    const movieInfoEl = document.createElement('div');
-    movieInfoEl.className = 'movie-info';
-  
-    // Create movie genre element
-    const movieGenreEl = document.createElement('span');
-    movieGenreEl.textContent = movie.genre.split(',')[0];
-  
-    // Create movie rating element
-    const movieRatingEl = document.createElement('span');
-    movieRatingEl.className = 'movie-rating';
-    movieRatingEl.innerHTML = `
-      <i class="fas fa-star"></i>
-      ${movie.rating}
-    `;
-  
-    // Add elements to movie info element
-    movieInfoEl.appendChild(movieGenreEl);
-    movieInfoEl.appendChild(movieRatingEl);
-  
-    // Add elements to movie content element
-    movieContentEl.appendChild(movieTitleEl);
-    movieContentEl.appendChild(movieInfoEl);
-  
-    // Add elements to movie element
-    movieEl.appendChild(movieActionsEl);
-    movieEl.appendChild(movieImageEl);
-    movieEl.appendChild(movieContentEl);
-  
-    // Add event listener to movie element
-    movieEl.addEventListener('click', () => showMovieDetails(movie));
-  
-    return movieEl;
+// Movie data
+const movies = [
+  { 
+    title: "Inception", 
+    genre: "Sci-Fi", 
+    rating: "8.8", 
+    description: "A mind-bending thriller.", 
+    poster: "https://via.placeholder.com/150" 
+  },
+  { 
+    title: "The Notebook", 
+    genre: "Romance", 
+    rating: "7.9", 
+    description: "A heartfelt love story.", 
+    poster: "https://via.placeholder.com/150" 
+  },
+  { 
+    title: "The Dark Knight", 
+    genre: "Action", 
+    rating: "9.0", 
+    description: "An epic Batman adventure.", 
+    poster: "https://via.placeholder.com/150" 
   }
+];
+
+// Redirect from login to movies page
+function redirectToMovies() {
+  const email = document.getElementById('email').value;
+  if (email) {
+    localStorage.setItem('userEmail', email);
+    window.location.href = 'movies.html';
+  }
+}
+
+// Chatbot functions
+function toggleChatbot() {
+  const chatbot = document.getElementById('chatbot');
+  chatbot.style.display = chatbot.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function clearChat() {
+  document.getElementById('chatbot-messages').innerHTML = '';
+}
+
+function sendMessage() {
+  const input = document.getElementById('user-input');
+  const messages = document.getElementById('chatbot-messages');
+  const userMsg = input.value.trim();
   
-  // Render movies
-  filtered.forEach(movie => {
-    const movieEl = renderMovie(movie, watchlist);
-    // Append movie element to the DOM
-    document.getElementById('movies-container').appendChild(movieEl);
-  });
+  if (!userMsg) return;
+
+  // Add user message
+  messages.innerHTML += `<div class="mb-2 text-right">👤: ${userMsg}</div>`;
+  
+  // Generate bot response
+  const mood = Object.keys(moodGenreMap).find(m => 
+    userMsg.toLowerCase().includes(m)
+  );
+  
+  let response;
+  if (mood) {
+    const genres = moodGenreMap[mood];
+    const matchingMovies = movies.filter(movie => 
+      genres.some(g => movie.genre.toLowerCase().includes(g.toLowerCase()))
+    );
+    response = matchingMovies.length > 0 
+      ? `🤖 Try these ${mood} movies:<br>${matchingMovies.map(m => `• ${m.title}`).join('<br>')}`
+      : "🤖 Sorry, no movies match your mood.";
+  } else {
+    response = "🤖 Tell me your mood (happy, sad, etc.) or favorite genre!";
+  }
+
+  messages.innerHTML += `<div class="mb-2">${response}</div>`;
+  input.value = '';
+  messages.scrollTop = messages.scrollHeight;
+}
+
+// Mood to genre mapping
+const moodGenreMap = {
+  happy: ["Comedy", "Romance"],
+  sad: ["Drama", "Feel-good"], 
+  adventurous: ["Action", "Thriller"],
+  thoughtful: ["Mystery", "Sci-Fi"]
+};
+
+// Initialize when page loads
+if (document.getElementById('movie-list')) {
+  renderMovies();
+}
+
+function renderMovies() {
+  const container = document.getElementById('movie-list');
+  container.innerHTML = movies.map(movie => `
+    <div class="movie-card bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md">
+      <img src="${movie.poster}" alt="${movie.title}" class="w-full h-48 object-cover">
+      <div class="p-4">
+        <h3 class="text-lg font-semibold">${movie.title}</h3>
+        <p class="text-sm text-gray-500">${movie.genre}</p>
+        <p class="text-sm mt-2">${movie.description}</p>
+        <div class="flex items-center mt-2">
+          <span class="text-yellow-500">⭐ ${movie.rating}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}

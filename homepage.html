@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Movie Recommender</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --primary: #ff4e50;
+      --dark: #121212;
+      --medium: #1f1f1f;
+      --light: #f9f9f9;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--dark);
+      color: white;
+      overflow-x: hidden;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    section {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+
+    section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Hero Section */
+    .hero {
+      background: url('https://images.unsplash.com/photo-1542204165-19b420fa2d63') center/cover no-repeat;
+      height: 90vh;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      color: white;
+      animation: fadeIn 2s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      color: #ccc;
+    }
+
+    .hero .cta {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .cta button {
+      padding: 12px 24px;
+      font-size: 1rem;
+      border-radius: 30px;
+      border: none;
+      background: var(--primary);
+      color: white;
+    }
+
+    .cta button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px var(--primary);
+    }
+
+    /* General Sections */
+    .section {
+      padding: 60px 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .section h2 {
+      font-size: 2rem;
+      margin-bottom: 30px;
+    }
+
+    .search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 10px 15px;
+  border-radius: 6px;
+  border: none;
+  font-size: 16px;
+}
+
+.search-bar button {
+  padding: 10px 16px;
+  background-color: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.search-results-section {
+  display: flex;
+  gap: 30px;
+  padding: 30px;
+  flex-wrap: wrap;
+  background-color: var(--dark);
+}
+
+.filters-panel {
+  width: 250px;
+  background: #1e1e2f;
+  padding: 20px;
+  border-radius: 10px;
+  color: white;
+}
+
+.filter-group {
+  margin-bottom: 20px;
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.search-results {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+
+    .genre-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .genre-buttons button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 20px;
+      background: var(--medium);
+      color: white;
+    }
+
+    .genre-buttons button:hover {
+      background: var(--primary);
+    }
+
+    /* Movie Grid */
+    .movie-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+    }
+
+    /* Trending Horizontal Scroll */
+    .scroll-container {
+      display: flex;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      gap: 20px;
+    }
+
+    .scroll-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .trending-wrapper {
+      position: relative;
+    }
+
+    .scroll-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--primary);
+      border: none;
+      color: white;
+      font-size: 2rem;
+      z-index: 10;
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .scroll-left {
+      left: -20px;
+    }
+
+    .scroll-right {
+      right: -20px;
+    }
+
+    /* Movie Cards */
+    .movie-card {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--medium);
+      cursor: pointer;
+      flex: 0 0 auto;
+      width: 180px;
+      height: 300px;
+      transition: 0.3s;
+    }
+
+    .movie-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .movie-info {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .movie-card:hover .movie-info {
+      opacity: 1;
+    }
+
+    .movie-info h4 {
+      font-size: 1rem;
+      margin-bottom: 5px;
+    }
+
+    .tags {
+      font-size: 0.75rem;
+      color: #ccc;
+      margin-top: 5px;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+  background: var(--medium);
+  color: white;
+  width: 800px;
+  max-width: 90%;
+  padding: 20px;
+  border-radius: 10px;
+  animation: popIn 0.4s ease-in-out;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-body {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.modal-image img {
+  width: 200px;
+  border-radius: 10px;
+}
+
+.modal-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.modal-details h3 {
+  margin-bottom: 10px;
+}
+
+.modal-details .genres {
+  font-size: 0.9rem;
+  color: #ccc;
+  margin-bottom: 10px;
+}
+
+.modal-details .actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+
+    .actions button {
+      padding: 10px 15px;
+      border-radius: 10px;
+      background: #333;
+      border: none;
+      color: white;
+      font-size: 0.9rem;
+    }
+
+    .actions .liked {
+      background: var(--primary);
+      animation: pulse 0.4s ease;
+    }
+
+    .actions .disliked {
+      background: #b30000;
+      animation: pulse 0.4s ease;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <h1>Discover Movies You'll Love — Powered by AI</h1>
+        <p>Smart recommendations tailored to your taste.</p>
+        <div class="cta">
+          <button>Get Started</button>
+          <button>Try a Demo</button>
+        </div>
+      </div>
+    </section>
+  
+    <!-- Search & Genre Picks -->
+    <section class="section" id="search">
+  <h2>Search & Quick Picks</h2>
+  <div class="search-bar">
+    <input type="text" id="movieSearch" placeholder="Search for movies, actors, genres..." />
+    <button id="searchBtn"><i class="fas fa-search"></i></button>
+    <div class="genre-buttons" id="genreButtons"></div>
+  </div>
+</section>
+
+  
+    <!-- Trending Movies -->
+    <section class="section">
+      <h2>🔥 Trending Now</h2>
+      <div class="trending-wrapper">
+        <button class="scroll-btn scroll-left" onclick="scrollTrending(-1)">&#9664;</button>
+        <div class="scroll-container" id="trendingMovies"></div>
+        <button class="scroll-btn scroll-right" onclick="scrollTrending(1)">&#9654;</button>
+      </div>
+    </section>
+  
+    <section class="search-results-section" id="searchResultsSection" style="display:none;">
+        <div class="filters-panel">
+          <h3>Filters</h3>
+          <div class="filter-group">
+            <label>Rating</label>
+            <input type="range" id="ratingFilter" min="0" max="10" step="0.1">
+          </div>
+          <div class="filter-group">
+            <label>Year</label>
+            <input type="number" id="yearFilter" placeholder="e.g. 2023">
+          </div>
+          <div class="filter-group">
+            <label>Production</label>
+            <input type="text" id="productionFilter">
+          </div>
+          <div class="filter-group">
+            <label>Director</label>
+            <input type="text" id="directorFilter">
+          </div>
+          <div class="filter-group">
+            <label>Hashtags / Keywords</label>
+            <input type="text" id="hashtagFilter">
+          </div>
+          <div class="filter-group">
+            <label>Genre</label>
+            <div id="genreFilterCheckboxes"></div>
+          </div>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+      </section>
+      
+
+    <!-- Movie Modal -->
+    <div class="modal" id="movieModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">×</span>
+            <div class="modal-body">
+              <div class="modal-image">
+                <img id="modalPoster" src="" alt="Movie Poster">
+              </div>
+              <div class="modal-details">
+                <h3 id="modalTitle">Movie Title</h3>
+                <p class="genres" id="modalGenres">Genres / Tags</p>
+                <p id="modalOverview">Movie Description...</p>
+                <p><strong>IMDb Rating:</strong> <span id="modalRating"></span></p>
+                <div class="actions">
+                  <button id="likeBtn" onclick="likeMovie(this)">👍 Like</button>
+                  <button id="dislikeBtn" onclick="dislikeMovie(this)">👎 Dislike</button>
+                  <button onclick="addToWatchlist()">➕ Add to Watchlist</button>
+                </div>
+              </div>
+            </div>
+          </div>          
+    </div>
+  
+    <script>
+      const API_KEY = '8a4659618cf779cc3016b9adafc84a0d';
+      const genreButtons = document.getElementById('genreButtons');
+      const trendingContainer = document.getElementById('trendingMovies');
+      const movieModal = document.getElementById('movieModal');
+  
+      async function getGenres() {
+  const res = await fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${API_KEY}`);
+  const data = await res.json();
+  data.genres.forEach(genre => {
+    // Genre buttons
+    const btn = document.createElement('button');
+    btn.textContent = genre.name;
+    btn.onclick = () => loadTrendingByGenre(genre.id);
+    genreButtons.appendChild(btn);
+
+    // Filter checkboxes
+    const cb = document.createElement('div');
+    cb.innerHTML = `
+      <label><input type="checkbox" value="${genre.id}"> ${genre.name}</label>
+    `;
+    document.getElementById('genreFilterCheckboxes').appendChild(cb);
+  });
+}
+
+  
+      async function loadTrending() {
+        const res = await fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}`);
+        const data = await res.json();
+        renderMovies(data.results);
+      }
+  
+      async function loadTrendingByGenre(genreId) {
+  const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}`);
+  const data = await res.json();
+  renderSearchResults(data.results); // <-- Load into search results section
+}
+
+  
+      function renderMovies(movies) {
+        trendingContainer.innerHTML = '';
+        movies.forEach(movie => {
+          const card = document.createElement('div');
+          card.classList.add('movie-card');
+          card.innerHTML = `
+            <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="">
+            <div class="movie-info">
+              <h4>${movie.title}</h4>
+              <p>⭐ ${movie.vote_average}</p>
+              <p class="tags">${movie.release_date?.slice(0, 4)} • ID: ${movie.id}</p>
+            </div>
+          `;
+          card.onclick = () => openModal(movie);
+          trendingContainer.appendChild(card);
+        });
+      }
+  
+      function scrollTrending(dir) {
+        trendingContainer.scrollBy({
+          left: dir * 600,
+          behavior: 'smooth'
+        });
+      }
+  
+      document.getElementById('searchBtn').addEventListener('click', async () => {
+  const query = document.getElementById('movieSearch').value;
+  if (!query.trim()) return;
+
+  const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${query}`);
+  const data = await res.json();
+
+  renderSearchResults(data.results);
+});
+
+function renderSearchResults(movies) {
+  const container = document.getElementById('searchResults');
+  const section = document.getElementById('searchResultsSection');
+  section.style.display = 'flex';
+  container.innerHTML = '';
+
+  movies.forEach(movie => {
+    const card = document.createElement('div');
+    card.classList.add('movie-card');
+    card.innerHTML = `
+      <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="">
+      <div class="movie-info">
+        <h4>${movie.title}</h4>
+        <p>⭐ ${movie.vote_average}</p>
+        <p class="tags">${movie.release_date?.slice(0, 4)}</p>
+      </div>
+    `;
+    card.onclick = () => openModal(movie);
+    container.appendChild(card);
+  });
+}
+
+
+      async function openModal(movie) {
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${API_KEY}`);
+        const data = await res.json();
+  
+        document.getElementById('modalTitle').textContent = data.title;
+        document.getElementById('modalOverview').textContent = data.overview;
+        document.getElementById('modalGenres').textContent = data.genres.map(g => g.name).join(', ');
+        document.getElementById('modalRating').textContent = data.vote_average;
+        document.getElementById('modalPoster').src = `https://image.tmdb.org/t/p/w500${data.poster_path}`;
+        movieModal.style.display = 'flex';
+      }
+  
+      function closeModal() {
+        movieModal.style.display = 'none';
+      }
+  
+      function likeMovie(btn) {
+        btn.classList.add('liked');
+        setTimeout(() => btn.classList.remove('liked'), 800);
+      }
+  
+      function dislikeMovie(btn) {
+        btn.classList.add('disliked');
+        setTimeout(() => btn.classList.remove('disliked'), 800);
+      }
+  
+      function addToWatchlist() {
+        alert("Added to Watchlist! ❤️");
+      }
+  
+      // Scroll animations
+      const sections = document.querySelectorAll('section');
+      window.addEventListener('scroll', () => {
+        sections.forEach(sec => {
+          const rect = sec.getBoundingClientRect();
+          if (rect.top < window.innerHeight - 100) {
+            sec.classList.add('visible');
+          }
+        });
+      });
+  
+      // Init
+      getGenres();
+      loadTrending();
+    </script>
+  </body>
+  </html>
+  
