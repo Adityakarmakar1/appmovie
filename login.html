@@ -484,7 +484,7 @@
       toggleBtn.textContent = document.body.classList.contains('dark') ? '🌙' : '☀️';
     });
 
-    // Form validation
+    // Form validation and redirect
     const form = document.getElementById('loginForm');
     const email = document.getElementById('email');
     const password = document.getElementById('password');
@@ -492,6 +492,8 @@
     const passError = document.getElementById('passError');
 
     form.addEventListener('submit', function (e) {
+      e.preventDefault(); // Prevent default form submission
+      
       let valid = true;
       emailError.textContent = "";
       passError.textContent = "";
@@ -505,10 +507,14 @@
         valid = false;
       }
 
-      if (!valid) {
-        e.preventDefault();
-      } else {
-        alert("Login successful! 🍿");
+      if (valid) {
+        // Show success message
+        alert("Login successful! Redirecting... 🍿");
+        
+        // Redirect to the specified webpage after 1 second
+        setTimeout(() => {
+          window.location.href = "homepage.html"; // Replace with your actual URL
+        }, 1000);
       }
     });
 
